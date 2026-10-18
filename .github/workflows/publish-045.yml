@@ -1,0 +1,46 @@
+name: Publish signed Selyro TV v0.4.5
+
+on:
+  push:
+    branches: ['main']
+    paths:
+      - '.github/workflows/publish-045.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reassemble only verified APK
+        run: |
+          set -euxo pipefail
+          test "$(find .staging/045 -maxdepth 1 -type f -name 'part-*' | wc -l)" -eq 33
+          cat .staging/045/part-* | base64 --decode > Selyro-TV-latest.apk
+          echo '4a4041c10b4f9f17582c938aeb15443c90a95400c45f6634c18c9f1e872970f7  Selyro-TV-latest.apk' | sha256sum --check -
+          unzip -tqq Selyro-TV-latest.apk
+          printf '%s  %s\n' '4a4041c10b4f9f17582c938aeb15443c90a95400c45f6634c18c9f1e872970f7' 'Selyro-TV-latest.apk' > Selyro-TV-latest.sha256
+          cat > latest.json <<'JSON'
+          {
+            "versionCode": 25,
+            "versionName": "0.4.5-public-updates-hotfix",
+            "apkUrl": "https://raw.githubusercontent.com/aseel90/selyro-tv-updates/main/Selyro-TV-latest.apk",
+            "sha256": "4a4041c10b4f9f17582c938aeb15443c90a95400c45f6634c18c9f1e872970f7",
+            "notes": "Fix public update delivery, remove intrusive update server 404 error banners from the home screen, show manual update check errors only in Settings. IPTV playback and buffering remain unchanged."
+          }
+          JSON
+      - name: Publish updater and clean temporary transfer
+        run: |
+          set -euxo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm -r .staging/045/
+          git add Selyro-TV-latest.apk Selyro-TV-latest.sha256 latest.json
+          git commit -m '[skip ci] Publish verified Selyro TV v0.4.5 public updater APK'
+          git push origin HEAD:main
