@@ -1,0 +1,7 @@
+{
+  "versionCode": 25,
+  "versionName": "0.4.5-public-updates-hotfix",
+  "apkUrl": "https://raw.githubusercontent.com/aseel90/selyro-tv-updates/main/Selyro-TV-latest.apk",
+  "sha256": "4a4041c10b4f9f17582c938aeb15443c90a95400c45f6634c18c9f1e872970f7",
+  "notes": "Fix public update delivery, remove intrusive update server 404 error banners from the home screen, show manual update check errors only in Settings. IPTV playback and buffering remain unchanged."
+}
